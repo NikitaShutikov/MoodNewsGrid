@@ -1,0 +1,10 @@
+CREATE DATABASE IF NOT EXISTS mydb;
+
+USE mydb;
+
+CREATE TABLE IF NOT EXISTS news (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    original_text TEXT NOT NULL,
+    source_url VARCHAR(512)
+);
