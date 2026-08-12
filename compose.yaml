@@ -5,3 +5,29 @@ services:
       - ./database:/docker-entrypoint-initdb.d
     environment:
       MARIADB_ROOT_PASSWORD: 298769qwe
+  server:
+    image: moodnewsgrid-server:dev
+    build:
+      context: ./server/
+      dockerfile: Dockerfile
+      target: dev
+
+    volumes: 
+      - ./server/:/app
+      - /home/user/.config/nvim:/root/.config/nvim
+      - /home/user/.config/tmux:/root/.config/tmux
+      - ${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY}:/tmp/${WAYLAND_DISPLAY}
+
+    environment:
+      - NEWS_API_KEY=564055bb1f734c0f93c519aa31b39c2e
+      - DB_USER=root
+      - DB_PASSWORD=298769qwe
+      - DB_HOST=database
+      - DB_PORT=3306
+      - DB_NAME=mydb
+      - XDG_RUNTIME_DIR=/tmp
+      - WAYLAND_DISPLAY=${WAYLAND_DISPLAY}
+
+    command: ["sleep", "infinity"]
+    tty: true
+    stdin_open: true
