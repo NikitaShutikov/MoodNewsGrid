@@ -1,6 +1,6 @@
 FROM archlinux as dev
 
-RUN pacman -Syu --noconfirm && pacman -S neovim clang git gcc make cmake jsoncpp util-linux zlib mariadb tree-citter-cli tmux --noconfirm
+RUN pacman -Syu --noconfirm && pacman -S neovim clang git gcc make cmake jsoncpp util-linux zlib mariadb tree-sitter-cli tmux jq tinyxml2 wl-clipboard cpp-httplib lldb yaml-cpp --noconfirm
 
 WORKDIR /deps
 RUN git clone --depth 1 https://github.com/drogonframework/drogon && \
