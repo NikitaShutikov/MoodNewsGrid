@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
 	const char* password = std::getenv("DB_PASSWORD");
 	const char* newsUrl = std::getenv("NEWS_URL");
 
-	newsUrl = newsUrl ? newsUrl : "https://russian.rt.com/rss";
+	newsUrl = newsUrl ? newsUrl : "https://www.vedomosti.ru/rss/articles.xml";
 
 	drogon::orm::MysqlConfig dbConfig{
 		.host = host ? host : "database",
@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	drogon::app().loadConfigFile("../config.json");
+	drogon::app().loadConfigFile("config.json");
 	drogon::app().addListener("0.0.0.0", 5555);
 	drogon::app().run();
 

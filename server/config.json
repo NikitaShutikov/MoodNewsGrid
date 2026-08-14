@@ -16,7 +16,7 @@
 	],
 	"app": {
 		"number_of_threads": 1,
-		"document_root": "./",
+		"document_root": "./public",
 		"home_page": "index.html",
 		"use_implicit_page": true,
 		"implicit_page": "index.html",
