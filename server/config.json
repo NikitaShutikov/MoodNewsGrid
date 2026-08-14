@@ -90,5 +90,6 @@
 		"enabled_compressed_request": false,
 		"enable_request_stream": false
 	},
-	"plugins": []
+	"plugins": [
+	]
 }

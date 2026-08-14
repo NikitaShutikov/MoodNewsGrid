@@ -5,6 +5,20 @@ services:
       - ./database:/docker-entrypoint-initdb.d
     environment:
       MARIADB_ROOT_PASSWORD: 298769qwe
+        
+  llama:
+    image: ghcr.io/ggml-org/llama.cpp:server
+    ports:
+      - "8080:8080"
+    volumes:
+      - /home/user/Загрузки/models:/models
+    command: >
+      -m /models/saiga_mistral_7b.Q4_K_M.gguf
+      --host 0.0.0.0
+      --port 8080
+      -c 8192
+      -np 2
+
   server:
     image: moodnewsgrid-server:dev
     build:
@@ -12,10 +26,14 @@ services:
       dockerfile: Dockerfile
       target: dev
 
+    ports:
+      - "5555:5555"
+
     volumes: 
       - ./server/:/app
       - /home/user/.config/nvim:/root/.config/nvim
       - /home/user/.config/tmux:/root/.config/tmux
+      - /home/user/Загрузки/saiga_mistral_7b.Q4_K_M.gguf:/models/saiga_mistral_7b.Q4_K_M.gguf
       - ${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY}:/tmp/${WAYLAND_DISPLAY}
 
     environment:
@@ -27,6 +45,10 @@ services:
       - DB_NAME=mydb
       - XDG_RUNTIME_DIR=/tmp
       - WAYLAND_DISPLAY=${WAYLAND_DISPLAY}
+
+    depends_on:
+      - database
+      - llama
 
     command: ["sleep", "infinity"]
     tty: true

@@ -30,8 +30,7 @@ add_executable(${PROJECT_NAME} main.cc)
 # and comment out the following lines
 find_package(Drogon CONFIG REQUIRED)
 find_package(TinyXML2 REQUIRED)
-find_package(llama REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE Drogon::Drogon tinyxml2 llama)
+target_link_libraries(${PROJECT_NAME} PRIVATE Drogon::Drogon tinyxml2)
 
 # ##############################################################################
 

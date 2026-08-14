@@ -7,6 +7,19 @@ using namespace drogon;
 using namespace drogon::orm;
 using namespace drogon_model::mydb;
 
+inline drogon::HttpResponsePtr newHttpJsonResponseUtf8(
+	const Json::Value& data) {
+	Json::StreamWriterBuilder builder;
+	builder["emitUTF8"] = true;
+	std::string body = Json::writeString(builder, data);
+
+	auto resp = drogon::HttpResponse::newHttpResponse();
+	resp->setStatusCode(drogon::k200OK);
+	resp->setContentTypeCode(drogon::CT_APPLICATION_JSON);
+	resp->setBody(body);
+	return resp;
+}
+
 void NewsCtrl::getOne(const HttpRequestPtr& req,
 					  std::function<void(const HttpResponsePtr&)>&& callback,
 					  News::PrimaryKeyType&& id) {
@@ -22,10 +35,118 @@ void NewsCtrl::getOne(const HttpRequestPtr& req,
 			auto& parameters = req->parameters();
 			auto iter = parameters.find("mood");
 			if (iter != parameters.end()) {
-				// TODO: добавить генерацию новости в зависимости от параметра
-				// mood
+				std::string mood = iter->second;
+				std::string originalText = r.getValueOfOriginalText();
+
+				std::string systemPrompt =
+					"Ты — редактор новостей. Переписывай тексты в заданном "
+					"тоне, "
+					"сохраняя все факты, даты, имена и цифры. Отвечай только "
+					"переписанным текстом, без пояснений.";
+
+				std::string userPrompt = "";
+
+				if (mood == "happy") {
+					userPrompt +=
+						"Перепиши следующий текст новости в веселом тоне. "
+						"Сделай текст жизнерадостным, добавь позитивные "
+						"эпитеты, используй восклицания.";
+				} else if (mood == "sad") {
+					userPrompt +=
+						"Перепиши следующий текст новости в печальном тоне. "
+						"Сделай текст печальным, трагичным и грустным, "
+						"используй "
+						"грустные обороты, "
+						"подчеркни потери и разочарования. ";
+				} else if (mood == "ironic") {
+					userPrompt +=
+						"Перепиши следующий текст новости в ироничном тоне. "
+						"Добавь сарказм и иронию, используй преувеличения, "
+						"высмеивай абсурдность ситуации.";
+				} else if (mood == "neutral") {
+					userPrompt +=
+						"Перепиши следующий текст новости в нейтральном тоне. "
+						"Перескажи текст сухо и фактически, без эмоций, как "
+						"официальная сводка. ";
+				} else {
+					Json::Value error;
+					error["error"] =
+						"Invalid mood parameter. Allowed: happy, sad, neutral, "
+						"ironic.";
+					auto resp =
+						drogon::HttpResponse::newHttpJsonResponse(error);
+					resp->setStatusCode(drogon::k400BadRequest);
+					(*callbackPtr)(resp);
+					return;
+				}
+				userPrompt +=
+					"\nСохрани все факты, даты, имена, цифры и ссылки. Ответь "
+					"только "
+					"переписанным текстом.\n\nТекст новости:\n" +
+					originalText;
+
+				Json::Value requestBody;
+				requestBody["model"] = "gpt-4";
+				Json::Value messages(Json::arrayValue);
+				Json::Value sysMsg;
+				sysMsg["role"] = "system";
+				sysMsg["content"] = systemPrompt;
+				messages.append(sysMsg);
+
+				Json::Value userMsg;
+				userMsg["role"] = "user";
+				userMsg["content"] = userPrompt;
+				messages.append(userMsg);
+
+				requestBody["messages"] = messages;
+				requestBody["temperature"] = 0.95;
+
+				auto client =
+					drogon::HttpClient::newHttpClient("http://llama:8080");
+				auto request = drogon::HttpRequest::newHttpRequest();
+				request->setMethod(drogon::Post);
+				request->setPath("/v1/chat/completions");
+				request->setContentTypeCode(drogon::CT_APPLICATION_JSON);
+				request->setBody(requestBody.toStyledString());
+
+				client->sendRequest(request, [callbackPtr, r](
+												 drogon::ReqResult result,
+												 const drogon::HttpResponsePtr&
+													 response) {
+					Json::Value ret = r.toJson();
+
+					if (result == drogon::ReqResult::Ok && response &&
+						response->getStatusCode() == 200) {
+						auto respJson = response->getJsonObject();
+						if (respJson) {
+							try {
+								std::string rewritten =
+									(*respJson)["choices"][0]["message"]
+											   ["content"]
+												   .asString();
+								ret["text_with_mood"] = rewritten;
+							} catch (const std::exception& e) {
+								std::cerr << "Failed to extract text from "
+											 "llama response: "
+										  << e.what() << std::endl;
+							}
+						} else {
+							std::cerr
+								<< "Failed to parse JSON from llama response"
+								<< std::endl;
+						}
+					} else {
+						std::cerr << "Llama API request failed (result="
+								  << static_cast<int>(result) << ")"
+								  << std::endl;
+					}
+
+					auto resp = newHttpJsonResponseUtf8(ret);
+					(*callbackPtr)(resp);
+				});
+			} else {
+				(*callbackPtr)(newHttpJsonResponseUtf8(r.toJson()));
 			}
-			(*callbackPtr)(HttpResponse::newHttpJsonResponse(r.toJson()));
 		},
 		[callbackPtr](const DrogonDbException& e) {
 			const drogon::orm::UnexpectedRows* s =
