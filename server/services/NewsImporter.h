@@ -5,7 +5,11 @@
 
 class NewsImporter {
    public:
-	NewsImporter(drogon::orm::MysqlConfig dbConfig);
+	/**
+	 * @param dbConfig Конфигурация базы данных
+	 * @param newsUrl URL новостей в RSS формате
+	 */
+	NewsImporter(drogon::orm::MysqlConfig dbConfig, std::string newsUrl);
 
 	/**
 	 * @brief Получает новости
@@ -22,4 +26,5 @@ class NewsImporter {
 
    private:
 	std::string dbConnInfo;
+	std::string newsUrl;
 };

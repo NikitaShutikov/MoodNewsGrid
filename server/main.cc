@@ -18,6 +18,9 @@ int main(int argc, char* argv[]) {
 	const char* dbName = std::getenv("DB_NAME");
 	const char* user = std::getenv("DB_USER");
 	const char* password = std::getenv("DB_PASSWORD");
+	const char* newsUrl = std::getenv("NEWS_URL");
+
+	newsUrl = newsUrl ? newsUrl : "https://russian.rt.com/rss";
 
 	drogon::orm::MysqlConfig dbConfig{
 		.host = host ? host : "database",
@@ -30,7 +33,7 @@ int main(int argc, char* argv[]) {
 	while ((opt = getopt(argc, argv, "s")) != -1) {
 		switch (opt) {
 			case 's':
-				auto newsImporter = NewsImporter(dbConfig);
+				auto newsImporter = NewsImporter(dbConfig, newsUrl);
 				auto news = newsImporter.fetchNews();
 				if (news.empty()) {
 					std::cerr << "Fetched 0 news" << std::endl;

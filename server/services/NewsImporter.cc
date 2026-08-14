@@ -1,17 +1,19 @@
+#include <utility>
 #define CPPHTTPLIB_OPENSSL_SUPPORT
-#include "NewsImporter.h"
-
 #include <drogon/orm/DbConfig.h>
 #include <httplib.h>
 #include <tinyxml2.h>
 
 #include <format>
 
+#include "NewsImporter.h"
+
 using namespace drogon;
 using namespace drogon::orm;
 using namespace drogon_model::mydb;
 
-NewsImporter::NewsImporter(MysqlConfig dbConfig) {
+NewsImporter::NewsImporter(MysqlConfig dbConfig, std::string newsUrl)
+	: newsUrl(std::move(newsUrl)) {
 	this->dbConnInfo =
 		std::format("host={} port={} dbname={} user={} password={}",
 					dbConfig.host, dbConfig.port, dbConfig.databaseName,
@@ -20,8 +22,8 @@ NewsImporter::NewsImporter(MysqlConfig dbConfig) {
 
 std::vector<News> NewsImporter::fetchNews() {
 	std::vector<News> news;
-	httplib::Client client("https://russian.rt.com");
-	auto res = client.Get("https://russian.rt.com/rss");
+	httplib::Client client(newsUrl);
+	auto res = client.Get(newsUrl);
 
 	if (res && res->status == 200) {
 		tinyxml2::XMLDocument doc;
