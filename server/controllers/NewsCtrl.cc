@@ -38,31 +38,30 @@ void NewsCtrl::getOne(const HttpRequestPtr& req,
 				std::string mood = iter->second;
 				std::string originalText = r.getValueOfOriginalText();
 
-				std::string systemPrompt =
+				std::string prompt =
 					"Ты — редактор новостей. Переписывай тексты в заданном "
 					"тоне, "
 					"сохраняя все факты, даты, имена и цифры. Отвечай только "
-					"переписанным текстом, без пояснений.";
-
-				std::string userPrompt =
-					"Перепиши следующий текст новости в " + mood + " тоне. ";
+					"переписанным текстом, без пояснений. "
+					"Перепиши следующий текст новости в " +
+					mood + " тоне. ";
 
 				if (mood == "happy") {
-					userPrompt +=
+					prompt +=
 						"Сделай текст жизнерадостным, добавь позитивные "
 						"эпитеты, используй восклицания. ";
 				} else if (mood == "sad") {
-					userPrompt +=
+					prompt +=
 						"Сделай текст печальным, трагичным и грустным, "
 						"используй "
 						"грустные обороты, "
 						"подчеркни потери и разочарования. ";
 				} else if (mood == "ironic") {
-					userPrompt +=
+					prompt +=
 						"Добавь сарказм и иронию, используй преувеличения, "
 						"высмеивай абсурдность ситуации. ";
 				} else if (mood == "neutral") {
-					userPrompt +=
+					prompt +=
 						"Перескажи текст сухо и фактически, без эмоций, как "
 						"официальная сводка. ";
 				} else {
@@ -76,7 +75,7 @@ void NewsCtrl::getOne(const HttpRequestPtr& req,
 					(*callbackPtr)(resp);
 					return;
 				}
-				userPrompt +=
+				prompt +=
 					"Сохрани все факты, даты, имена, цифры и ссылки. Ответь "
 					"только "
 					"переписанным текстом. Текст новости:\n" +
@@ -85,14 +84,10 @@ void NewsCtrl::getOne(const HttpRequestPtr& req,
 				Json::Value requestBody;
 				requestBody["model"] = "gpt-4";
 				Json::Value messages(Json::arrayValue);
-				Json::Value sysMsg;
-				sysMsg["role"] = "system";
-				sysMsg["content"] = systemPrompt;
-				messages.append(sysMsg);
 
 				Json::Value userMsg;
 				userMsg["role"] = "user";
-				userMsg["content"] = userPrompt;
+				userMsg["content"] = prompt;
 				messages.append(userMsg);
 
 				requestBody["messages"] = messages;

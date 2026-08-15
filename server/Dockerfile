@@ -11,5 +11,9 @@ RUN git clone --depth 1 https://github.com/drogonframework/drogon && \
 WORKDIR /app
 COPY . .
 
-# ADD https://huggingface.co/TheBloke/saiga_mistral_7b-GGUF/resolve/main/saiga_mistral_7b.Q4_K_M.gguf /models/saiga_mistral_7b.Q4_K_M.gguf
+WORKDIR /app/build
 
+RUN cmake -DCMAKE_BUILD_TYPE=Release .. && \
+	cmake --build .
+
+WORKDIR /app

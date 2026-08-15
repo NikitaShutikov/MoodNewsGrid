@@ -39,7 +39,8 @@ int main(int argc, char* argv[]) {
 					std::cerr << "Fetched 0 news" << std::endl;
 					return 1;
 				}
-				return newsImporter.seedNews(news);
+				newsImporter.seedNews(news);
+				return 0;
 		}
 	}
 

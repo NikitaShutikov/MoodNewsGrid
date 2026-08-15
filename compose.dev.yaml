@@ -32,6 +32,9 @@ services:
 
     volumes: 
       - ./server/:/app
+      - /home/user/.config/nvim:/root/.config/nvim
+      - /home/user/.config/tmux:/root/.config/tmux
+      - ${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY}:/tmp/${WAYLAND_DISPLAY}
 
     environment:
       - NEWS_URL=https://www.vedomosti.ru/rss/articles.xml
@@ -40,11 +43,14 @@ services:
       - DB_HOST=database
       - DB_PORT=3306
       - DB_NAME=mydb
+      - XDG_RUNTIME_DIR=/tmp
+      - WAYLAND_DISPLAY=${WAYLAND_DISPLAY}
 
     depends_on:
       - database
       - llama
 
+    # command: ["sleep", "infinity"]
     entrypoint: ["./entrypoint.sh"]
     tty: true
     stdin_open: true
