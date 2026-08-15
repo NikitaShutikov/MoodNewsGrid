@@ -30,9 +30,6 @@ services:
     ports:
       - "5555:5555"
 
-    volumes: 
-      - ./server/:/app
-
     environment:
       - NEWS_URL=https://www.vedomosti.ru/rss/articles.xml
       - DB_USER=root
