@@ -49,27 +49,35 @@ std::vector<News> NewsImporter::fetchNews() {
 		while (item) {
 			News newsItem;
 
-			// TODO: Обработать ситуации когда нету полей title, link или
-			// description
 			tinyxml2::XMLElement* titleElem = item->FirstChildElement("title");
 			if (titleElem && titleElem->GetText()) {
 				newsItem.setTitle(titleElem->GetText());
+			} else {
+				std::cerr << "Missing link for news" << std::endl;
+				item = item->NextSiblingElement("item");
+				continue;
 			}
 
 			tinyxml2::XMLElement* linkElem = item->FirstChildElement("link");
 			if (linkElem && linkElem->GetText()) {
 				newsItem.setSourceUrl(linkElem->GetText());
+			} else {
+				std::cerr << "Missing link for news" << std::endl;
+				item = item->NextSiblingElement("item");
+				continue;
 			}
 
 			tinyxml2::XMLElement* descriptionElem =
 				item->FirstChildElement("description");
 			if (descriptionElem && descriptionElem->GetText()) {
 				newsItem.setOriginalText(descriptionElem->GetText());
-				news.push_back(newsItem);
 			} else {
 				std::cerr << "Missing description for news" << std::endl;
+				item = item->NextSiblingElement("item");
+				continue;
 			}
 
+			news.push_back(newsItem);
 			item = item->NextSiblingElement("item");
 		}
 	} else {

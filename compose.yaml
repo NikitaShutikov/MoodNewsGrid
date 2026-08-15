@@ -20,11 +20,10 @@ services:
       -np 2
 
   server:
-    image: moodnewsgrid-server:dev
+    image: moodnewsgrid-server
     build:
       context: ./server/
       dockerfile: Dockerfile
-      target: dev
 
     ports:
       - "5555:5555"
